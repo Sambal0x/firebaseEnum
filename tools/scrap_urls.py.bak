@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+
+
+import requests
+from bs4 import BeautifulSoup
+from tqdm import tqdm
+import os
+
+BANNER = '''
+++++++++++++++++++++++
+    APK scrapper
+++++++++++++++++++++++
+'''
+
+def scrap_apk_pages(pages,category):
+    """
+    Scrap 'https://apkpure.com/<category>?page=<pages>' to find
+    individual APK pages
+        -pages = number of pages to iterate
+        -category = app(default), dating, finance, games, business, medical...
+    """
+    APK_pages=[]
+    for page in range(pages+1): # page starts from 1 not 0
+        r = requests.get('https://apkpure.com/' + category + '?page=' + str(page))
+        soup = BeautifulSoup(r.text, 'html.parser')
+        results = soup.find_all('div', attrs={'class':'category-template-down'})
+        for result in results:
+            url = "https://apkpure.com" + result.find('a')['href']
+            APK_pages.append(url)
+
+    print("[+] Total APKs found =" + str(len(APK_pages)))
+    return APK_pages
+
+
+def scrap_apk_downloadurls(APK_pages):
+    """
+    Scrap an array of APK pages to extract download URLs
+    """
+    print("[+] Scraping APK download link...")
+    APK_records= []
+    for url in (APK_pages):
+        r = requests.get(url, allow_redirects=False)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        try:
+            flink = soup.find('a', attrs={'id':'download_link'})['href']
+            filename = soup.find('span', attrs={'class':'file'})
+            # e.g. <span class="file">Bigfoot_v1.0.126.2000_apkpure.com.apk 
+            # <span class="fsize">(80.5 MB)</span></span>
+            # remove the inner span tag <class='fsize'> to extract just filename
+            filesize = filename.span.extract()
+            fname = filename.text.replace(" ","")
+            fsize = filesize.text[1:-1]
+            APK_records.append((fname, fsize, flink))
+            print(fname)
+        except:
+            pass
+            #print ("[-] There was an issue getting the next APK file! Moving on ...")
+
+    print("[+] " + str(len(APK_records)) + " APK download urls scraped ...")
+    return APK_records
+
+def download_apk_files(APK_records):
+    """
+    Takes the array with the following scheme and downloads the
+    APK files.
+
+    APK_records[][0] = APK filename 
+    APK_records[][1] = APK file size (MB)
+    APK_records[][2] = APK download link
+    """
+    
+    out_dir = 'apk-downloads'
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+    
+    
+    print("[+] Initiating Downloads! Grab a coffee, this could take a while...")
+    for i in (range(len(APK_records))):
+        fname = APK_records[i][0]
+        fsize = APK_records[i][1]
+        flink = APK_records[i][2]
+        #print (fname + ": link is " + flink)
+        #print("Downloading " + fname)
+        r = requests.get(flink, stream=True) 
+        content_length = int(r.headers['content-length'])
+    
+        #check if file has been previously downloaded
+        if not os.path.exists(out_dir + '/' + fname):
+            # write file and show progress bar
+            with open(out_dir + '/' + fname, 'wb') as f:
+                for data in tqdm(iterable = r.iter_content(chunk_size = 1024)\
+                    , total = content_length/1024, unit ='MB', desc="Downloading "+fname):
+                    f.write(data)  
+        else: 
+            print("file :" +  out_dir + "/" + fname + "exists")
+
+    print("Download complete! Your patience has paid off..")
+
+
+def execute(pages,category):
+    """
+    Function called by main program
+    """
+    print(BANNER)
+    # default category = app
+    # default pages = 1
+    APK_pages = scrap_apk_pages(pages,category)
+    APK_records = scrap_apk_downloadurls(APK_pages)
+    download_apk_files(APK_records)
+    return
