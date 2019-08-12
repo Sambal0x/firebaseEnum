@@ -9,7 +9,7 @@ import progressbar
 
 try:
     from requests_futures.sessions import FuturesSession
-    from concurrent.futures import ThreadPoolExecutor
+    from concurrent.futures import ThreadPoolExecutor,wait, as_completed
 except ImportError:
     print("[!] You'll need to pip install requests-futures for this tool.")
     sys.exit()
@@ -109,42 +109,29 @@ def download(url, fname):
     # with multithreading capability as file writing is involved
     response = requests.get(url,stream=True)
     #response.raise_for_status() #check for 4xx or 5xx
-
+    
+    #pbar = progressbar.ProgressBar()
     content_length = int(response.headers['content-length'])
 
     #check if file has been previously downloaded
     if not os.path.exists(out_dir + '/' + fname):
         with open('{}/{}'.format(out_dir,fname), 'wb') as f:
-        #    for data in tqdm(iterable = response.iter_content(chunk_size = 1024)\
-        #            , total = content_length/1024, unit ='MB', desc="Downloading {}".format(fname)):
-        #        f.write(data)
-            bar = make_progress_bar()
-            bar.start(content_length)
-            readsofar = 0
-            
+            #for data in tqdm(iterable = response.iter_content(chunk_size = 1024)\
+            #        , total = content_length/1024, unit ='MB', desc="Downloading {}".format(fname)):
             for chunk in response.iter_content(chunk_size=1024):
                 if chunk:
-                    readsofar += len(chunk)
-                    bar.update(readsofar)
                     f.write(chunk)
-                    f.flush()
-            bar.finish()
             print("[+] File {}/{} saved!".format(out_dir,fname))
-
     
     else: 
         print("file :{}/{} already exists!".format(out_dir,fname))
 
 
 
-def download_apk_files(APK_records,threads=5):
+def download_apk_files(APK_records,threads=25):
     """
     Takes the array with the following scheme and downloads the
     APK files.
-
-    APK_records[][0] = APK filename 
-    APK_records[][1] = APK file size (MB)
-    APK_records[][2] = APK download link
     """
    
     futures = [] 
@@ -156,17 +143,18 @@ def download_apk_files(APK_records,threads=5):
 
     # First just send the requests in an async fashion with x amount of threads)
     for i in (range(len(APK_records))):
-        fname = APK_records[i][0]
-        fsize = APK_records[i][1]
-        flink = APK_records[i][2]
+        fname = APK_records[i][0] # APK filename
+        fsize = APK_records[i][1] # APK file size (MB)
+        flink = APK_records[i][2] # APK download link
     
         future = executor.submit(download, flink, fname)
         futures.append(future)
+
+    #for f in tqdm(as_completed(futures), total=len(futures)):  # progress bar not quite working
+    #    pass
+    wait(futures, timeout=None) # need this line to hold here until all futures are completed.
+
                 
-
-    print("Download complete! ")
-
-
 def execute(pages,category):
     """
     Function called by main program
