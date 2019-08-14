@@ -15,7 +15,7 @@ import os
 import sys
 import re
 import argparse
-from tools import scrap_urls
+from tools import scrap_urls,process
 
 BANNER = \
 '''
@@ -51,6 +51,9 @@ def parse_arguments():
                         help='APK category list from APKpure.com',
                         default='app')
 
+    parser.add_argument('-a', '--apkpure', action='store_true',
+                        help='download APKs from apkpure.com')
+
     # Top X sitenames from Alexa
     #parser.add_argument('--alexa', '-a', type=int,
     #                    help='Names from Top X Alexa sites',
@@ -73,7 +76,11 @@ def main():
     print(BANNER)
 
     # All the work is done in the individual modules
-    scrap_urls.execute(args.pages, args.category)
+    if args.apkpure:
+        scrap_urls.execute(args.pages, args.category)
+        process.execute()
+
+    
     
     print("[+] All done")
 

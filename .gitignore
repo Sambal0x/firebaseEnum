@@ -123,5 +123,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# APK downloads
+# results 
 apk-downloads/
+firebaseio.csv
+

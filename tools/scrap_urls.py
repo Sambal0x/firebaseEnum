@@ -76,28 +76,13 @@ def scrap_apk_downloadurls(APK_pages,threads=25):
             fname = filename.text.replace(" ","")
             fsize = filesize.text[1:-1]
             APK_records.append((fname, fsize, flink))
-            print(fname)
+            #print(fname)
         except:
             pass
             #print ("[-] There was an issue getting the next APK file! Moving on ...")
 
     print("[+] APK download urls scraped = {}".format(len(APK_records)))
     return APK_records
-
-def make_progress_bar():
-    return progressbar.ProgressBar(
-        redirect_stdout=True,
-        redirect_stderr=True,
-        widgets=[
-            progressbar.Percentage(),
-            progressbar.Bar(),
-            ' (',
-            progressbar.AdaptiveTransferSpeed(),
-            ' ',
-            progressbar.ETA(),
-            ') ',
-])
-
 
 def download(url, fname):
 
@@ -116,15 +101,13 @@ def download(url, fname):
     #check if file has been previously downloaded
     if not os.path.exists(out_dir + '/' + fname):
         with open('{}/{}'.format(out_dir,fname), 'wb') as f:
-            #for data in tqdm(iterable = response.iter_content(chunk_size = 1024)\
-            #        , total = content_length/1024, unit ='MB', desc="Downloading {}".format(fname)):
             for chunk in response.iter_content(chunk_size=1024):
                 if chunk:
                     f.write(chunk)
             print("[+] File {}/{} saved!".format(out_dir,fname))
     
     else: 
-        print("file :{}/{} already exists!".format(out_dir,fname))
+        print("file :{}/{} already exists! skipping ...".format(out_dir,fname))
 
 
 
