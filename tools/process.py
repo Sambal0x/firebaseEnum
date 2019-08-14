@@ -44,7 +44,7 @@ def get_firebase_urls(apk_folder):
 
 def check_open_database(f_file,threads=5):
     """
-    Takes a list of firebase urls and check for if its open
+    Takes a file with urls and check if database its open
     """
     print("[+] Checking for open firebase databases...")
 

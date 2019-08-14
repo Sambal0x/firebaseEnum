@@ -15,7 +15,7 @@ import os
 import sys
 import re
 import argparse
-from tools import scrap_urls,process
+from tools import scrap_urls,process,keyword_search
 
 BANNER = \
 '''
@@ -34,17 +34,25 @@ def parse_arguments():
     """
     Handles user-passed parameters
     """
-    desc = "Firebase enumeration tool v0.1(beta)"
+    desc = "Firebase enumeration tool"
     parser = argparse.ArgumentParser(description=desc)
 
-    # Keyword can be given multiple times
-    #parser.add_argument('-k', '--keyword', type=str, action='append',
-    #                    required=False,
-    #                    help='Keyword. Can use argument multiple times.')
+    script_path = os.path.dirname(__file__)
+
+    #Keyword can be given multiple times
+    parser.add_argument('-k', '--keyword', type=str,
+                        required=False,
+                        help='Keyword. Can use argument multiple times.')
+
+
+    #Use included mutation file by default, or let user provide one
+    parser.add_argument('-m', '--mutations', type=str, action='store',
+                        default=script_path + '/tools/fuzz.txt',
+                        help='Mutation. Default: tools/fuzz.txt')
 
     # How many pages of APKpure to scrap for APK files
     parser.add_argument('-p', '--pages', type=int,
-                        help='Pages of from APKpure to extract APK files',
+                        help='Number of APKpure.com pages to parse',
                         default=1)
     
     parser.add_argument('-c', '--category', type=str,
@@ -54,15 +62,6 @@ def parse_arguments():
     parser.add_argument('-a', '--apkpure', action='store_true',
                         help='download APKs from apkpure.com')
 
-    # Top X sitenames from Alexa
-    #parser.add_argument('--alexa', '-a', type=int,
-    #                    help='Names from Top X Alexa sites',
-    #                    default=0)
-
-    # Use included mutation file by default, or let user provide one
-    #parser.add_argument('-m', '--mutations', type=str, action='store',
-    #                    default=script_path + '/tools/fuzz.txt',
-    #                    help='Mutation. Default: tools/fuzz.txt')
 
     args = parser.parse_args()
     return args
@@ -75,8 +74,12 @@ def main():
     args = parse_arguments()
     print(BANNER)
 
-    # All the work is done in the individual modules
-    if args.apkpure:
+    # check if keyword module is requested
+    if args.keyword:
+        keyword_search.execute(args.mutations, args.keyword)
+
+    # else check if apkpure module is requested
+    elif args.apkpure:
         scrap_urls.execute(args.pages, args.category)
         process.execute()
 
