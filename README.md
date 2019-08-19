@@ -7,12 +7,24 @@ Purpose: Enumerate exposed firebase databases
   * search for specific APK or search for keywords (to-do)
 * Mutate a keyword to find exposed Firebase databases (to-do)
   * Could be useful for when searching for a specific company
-* Use Alex top domains names to find exposed Firebase database (to-do)
 
 **Usage**
 ```
-python3 firebaseEnum.py [-h] [--apkpure] [-c finance] [-p 1]  
+python3 firebaseEnum.py [-h] [--apkpure] [-c] [-p] [k]
 ```
+
+**Example**
+
+Downloads 2 pages of finance related Android apps from APKpure.com and check for exposed firebase databases
+```
+python3 firebaseEnum.py -a -c finance -p 2
+```
+
+Search for possible `company` related firebase open databases for analysis
+```
+python3 firebaseEnum.py -k company
+```
+
 
 **Complete Usage Details**
 ```
@@ -31,7 +43,7 @@ optional arguments:
                         Number of APKpure.com pages to parse
   -c CATEGORY, --category CATEGORY
                         APK category list from APKpure.com
-  -a, --apkpure         download APKs from apkpure.com
+  -a, --apkpure         enable APKpure.com module
 
 ```
 
