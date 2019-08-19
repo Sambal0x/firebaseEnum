@@ -63,6 +63,11 @@ def parse_arguments():
                         help='download APKs from apkpure.com')
 
 
+    parser.add_argument('-t', '--threads', type=int, action='store',
+                        help='number of threads for requests',
+                        default=5)
+
+
     args = parser.parse_args()
     return args
 
@@ -76,11 +81,11 @@ def main():
 
     # check if keyword module is requested
     if args.keyword:
-        keyword_search.execute(args.mutations, args.keyword)
+        keyword_search.execute(args.mutations, args.keyword, args.threads)
 
     # else check if apkpure module is requested
     elif args.apkpure:
-        scrap_urls.execute(args.pages, args.category)
+        scrap_urls.execute(args.pages, args.category, args.threads)
         process.execute()
 
     

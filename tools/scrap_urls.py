@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-
+import sys
 import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
@@ -14,7 +14,7 @@ except ImportError:
     print("[!] You'll need to pip install requests-futures for this tool.")
     sys.exit()
 
-
+tick = {}
 
 BANNER = '''
 =====================
@@ -86,6 +86,8 @@ def scrap_apk_downloadurls(APK_pages,threads=25):
 
 def download(url, fname):
 
+    global tick
+
     out_dir = 'apk-downloads'
     if not os.path.exists(out_dir):
         os.makedirs(out_dir) 
@@ -110,15 +112,26 @@ def download(url, fname):
         print("file :{}/{} already exists! skipping ...".format(out_dir,fname))
 
 
+    # Refresh a status message
+    tick['current'] += 1
+    sys.stdout.flush()
+    sys.stdout.write("    {}/{} complete...".format(tick['current'],tick['total']))
+    sys.stdout.write('\r')
+
+
 
 def download_apk_files(APK_records,threads=25):
     """
     Takes the array with the following scheme and downloads the
     APK files.
     """
-   
+    global tick 
     futures = [] 
     queue = {}
+    tick['total'] = len(APK_records)
+    tick['current'] = 0
+
+
     executor = ThreadPoolExecutor(max_workers=threads) 
 
     

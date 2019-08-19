@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import os
 import csv
 import requests
@@ -17,6 +18,8 @@ def get_firebase_urls(apk_folder):
     """
     Extract firebase urls in a folder of APKs
     """
+    tick = {}
+    tick['current']=0
     print("Looking for firebase URLS in {}".format(apk_folder))
 
     #os.chdir(apk_folder)
@@ -40,6 +43,13 @@ def get_firebase_urls(apk_folder):
                 if firebase_url: #check if not empty , especially the last element in array
                     csv_writer.writerow([firebase_url,filename])
 
+            # Refresh a status message
+            tick['total'] = len(os.listdir(apk_folder))
+            tick['current'] += 1
+            sys.stdout.flush()
+            sys.stdout.write("    {}/{} complete...".format(tick['current'],tick['total']))
+            sys.stdout.write('\r')
+
 
 
 def check_open_database(f_file,threads=5):
@@ -48,6 +58,8 @@ def check_open_database(f_file,threads=5):
     """
     print("[+] Checking for open firebase databases...")
 
+    tick = {}
+    tick['current']=0
     session = FuturesSession(executor=ThreadPoolExecutor(max_workers=threads))
     queue = {}
     urls = []
@@ -74,28 +86,13 @@ def check_open_database(f_file,threads=5):
             except OSError:
                 print("[!] Error on {}".format(url))
 
-'''
-    for url in urls:
-         Just dump all sync request into the 'queue' dict
-        try:
-            queue[url] = session.get(url+ '/.json')
-            #print('{} done!'.format(url))
-        except OSError:
-            print("[!] Connection error on {}".format(url))
-            
-    # Then, grab all hte response from the queue
-    for url in urls:
-        #print('checking {}'.format(url))
-        try:
-            response = queue[url].result()
-            print(response.status_code)
-            if response.status_code == 200:
-                print('[+] {}/.json is vulnerable'.format(url))
-        except OSError:
-            print("[!] Error on {}".format(url))
-'''
-        
-                
+            # Refresh a status message
+            tick['total'] = len(lines)
+            tick['current'] += 1
+            sys.stdout.flush()
+            sys.stdout.write("    {}/{} complete...".format(tick['current'],tick['total']))
+            sys.stdout.write('\r')
+
 def execute():
     """
     Function called by main program
