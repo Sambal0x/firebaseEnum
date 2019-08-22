@@ -3,9 +3,7 @@
 import sys
 import requests
 from bs4 import BeautifulSoup
-from tqdm import tqdm
 import os
-import progressbar
 
 try:
     from requests_futures.sessions import FuturesSession
