@@ -1,1 +1,2 @@
 requests_futures==0.9.9
+bs4
